@@ -1,0 +1,18 @@
+# Base packages installed on Atlas Linux systems.
+#
+# One package per line.
+# Blank lines and comments are ignored.
+
+curl
+git
+htop
+jq
+nano
+openssh-server
+ripgrep
+tmux
+tree
+unzip
+vim
+wget
+zsh

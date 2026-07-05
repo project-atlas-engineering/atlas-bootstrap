@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Finder
+Icon?
+
+# macOS archive metadata
+__MACOSX/
+
+# VS Code
+.vscode/
+
+# Vim
+*.swp
+*.swo
+
+# Temporary files
+*~
+
+# Shell history
+.history
+
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
