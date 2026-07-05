@@ -1,0 +1,7 @@
+# Atlas-managed zsh entrypoint.
+#
+# This file is installed by Atlas Bootstrap.
+# Local user customizations should remain outside this file.
+
+source "$HOME/.config/atlas/environment"
+source "$HOME/.config/atlas/aliases"

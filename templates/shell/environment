@@ -1,0 +1,4 @@
+# Atlas-managed environment variables.
+
+export ATLAS_HOME="$HOME/atlas"
+export PATH="$ATLAS_HOME/bin:$PATH"

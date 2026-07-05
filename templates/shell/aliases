@@ -1,0 +1,4 @@
+# Atlas-managed shell aliases.
+
+alias atlas-home='cd "$ATLAS_HOME"'
+alias atlas-repos='cd "$ATLAS_HOME/repos"'
