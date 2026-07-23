@@ -3,6 +3,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STAGE_TOTAL=5
+BOOTSTRAP_STARTED_AT=$SECONDS
 
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/system.sh"
@@ -28,13 +30,35 @@ else
     atlas_info "Privileges:      standard user"
 fi
 
-atlas_section "Bootstrap Framework"
-atlas_success "Framework initialized"
+run_stage 1 "$STAGE_TOTAL" \
+    "Install Packages" \
+    "$SCRIPT_DIR/install-packages.sh"
 
-run_stage "Install Packages" "$SCRIPT_DIR/install-packages.sh"
-run_stage "Configure Shell" "$SCRIPT_DIR/configure-shell.sh"
-run_stage "Configure SSH" "$SCRIPT_DIR/configure-ssh.sh"
-run_stage "Configure Tailscale" "$SCRIPT_DIR/configure-tailscale.sh"
-run_stage "Install Atlas" "$SCRIPT_DIR/install-atlas.sh"
+run_stage 2 "$STAGE_TOTAL" \
+    "Configure Shell" \
+    "$SCRIPT_DIR/configure-shell.sh"
 
-atlas_footer "Bootstrap completed successfully."
+run_stage 3 "$STAGE_TOTAL" \
+    "Configure SSH" \
+    "$SCRIPT_DIR/configure-ssh.sh"
+
+run_stage 4 "$STAGE_TOTAL" \
+    "Configure Tailscale" \
+    "$SCRIPT_DIR/configure-tailscale.sh"
+
+run_stage 5 "$STAGE_TOTAL" \
+    "Install Atlas" \
+    "$SCRIPT_DIR/install-atlas.sh"
+
+BOOTSTRAP_ELAPSED=$((SECONDS - BOOTSTRAP_STARTED_AT))
+
+atlas_section "Bootstrap Summary"
+atlas_success "Install Packages"
+atlas_success "Configure Shell"
+atlas_success "Configure SSH"
+atlas_success "Configure Tailscale"
+atlas_success "Install Atlas"
+echo
+atlas_info "Elapsed time: $(atlas_format_duration "$BOOTSTRAP_ELAPSED")"
+
+atlas_footer "Atlas Bootstrap completed successfully."

@@ -61,30 +61,49 @@ atlas_error() {
     echo -e "${ATLAS_RED}✗${ATLAS_RESET} $1" >&2
 }
 
-atlas_progress() {
-    local label="$1"
-    local width=28
-    local delay=0.025
+atlas_format_duration() {
+    local total_seconds="$1"
+    local minutes=$((total_seconds / 60))
+    local seconds=$((total_seconds % 60))
 
-    printf "  %s [" "$label"
-
-    for ((i = 0; i < width; i++)); do
-        printf "#"
-        sleep "$delay"
-    done
-
-    printf "] done\n"
+    if ((minutes > 0)); then
+        printf "%dm %02ds" "$minutes" "$seconds"
+    else
+        printf "%ds" "$seconds"
+    fi
 }
 
 run_stage() {
-    local stage_name="$1"
-    local script_path="$2"
+    local stage_number="$1"
+    local stage_total="$2"
+    local stage_name="$3"
+    local script_path="$4"
+    local started_at
+    local finished_at
+    local elapsed
+    local status
 
-    atlas_section "$stage_name"
-    atlas_step "Delegating to $(basename "$script_path")"
-    atlas_progress "Running"
+    atlas_section "[$stage_number/$stage_total] $stage_name"
+    atlas_info "Script: $(basename "$script_path")"
 
-    "$script_path"
+    started_at=$SECONDS
 
-    atlas_success "Complete"
+    if "$script_path"; then
+        status=0
+    else
+        status=$?
+    fi
+
+    finished_at=$SECONDS
+    elapsed=$((finished_at - started_at))
+
+    echo
+
+    if [[ "$status" -eq 0 ]]; then
+        atlas_success "$stage_name complete ($(atlas_format_duration "$elapsed"))"
+    else
+        atlas_error "$stage_name failed with status $status ($(atlas_format_duration "$elapsed"))"
+    fi
+
+    return "$status"
 }
