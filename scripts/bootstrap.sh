@@ -12,6 +12,7 @@ STAGE_NAMES=(
     "Install Packages"
     "Configure Shell"
     "Configure SSH"
+    "Install Tailscale"
     "Configure Tailscale"
     "Install Atlas"
 )
@@ -20,6 +21,7 @@ STAGE_SCRIPTS=(
     "$SCRIPT_DIR/install-packages.sh"
     "$SCRIPT_DIR/configure-shell.sh"
     "$SCRIPT_DIR/configure-ssh.sh"
+    "$SCRIPT_DIR/install-tailscale.sh"
     "$SCRIPT_DIR/configure-tailscale.sh"
     "$SCRIPT_DIR/install-atlas.sh"
 )
