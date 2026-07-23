@@ -6,6 +6,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "$SCRIPT_DIR/lib/common.sh"
 
-atlas_info "Placeholder implementation."
+atlas_info "Stage not yet implemented."
 
 exit 0

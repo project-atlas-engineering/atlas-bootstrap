@@ -3,11 +3,37 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STAGE_TOTAL=5
 BOOTSTRAP_STARTED_AT=$SECONDS
 
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/system.sh"
+
+STAGE_NAMES=(
+    "Install Packages"
+    "Configure Shell"
+    "Configure SSH"
+    "Configure Tailscale"
+    "Install Atlas"
+)
+
+STAGE_SCRIPTS=(
+    "$SCRIPT_DIR/install-packages.sh"
+    "$SCRIPT_DIR/configure-shell.sh"
+    "$SCRIPT_DIR/configure-ssh.sh"
+    "$SCRIPT_DIR/configure-tailscale.sh"
+    "$SCRIPT_DIR/install-atlas.sh"
+)
+
+STAGE_STATUSES=(
+    "pending"
+    "pending"
+    "pending"
+    "pending"
+    "pending"
+)
+
+STAGE_TOTAL="${#STAGE_NAMES[@]}"
+BOOTSTRAP_STATUS=0
 
 atlas_detect_system
 
@@ -30,35 +56,48 @@ else
     atlas_info "Privileges:      standard user"
 fi
 
-run_stage 1 "$STAGE_TOTAL" \
-    "Install Packages" \
-    "$SCRIPT_DIR/install-packages.sh"
+for index in "${!STAGE_NAMES[@]}"; do
+    stage_number=$((index + 1))
 
-run_stage 2 "$STAGE_TOTAL" \
-    "Configure Shell" \
-    "$SCRIPT_DIR/configure-shell.sh"
-
-run_stage 3 "$STAGE_TOTAL" \
-    "Configure SSH" \
-    "$SCRIPT_DIR/configure-ssh.sh"
-
-run_stage 4 "$STAGE_TOTAL" \
-    "Configure Tailscale" \
-    "$SCRIPT_DIR/configure-tailscale.sh"
-
-run_stage 5 "$STAGE_TOTAL" \
-    "Install Atlas" \
-    "$SCRIPT_DIR/install-atlas.sh"
+    if run_stage \
+        "$stage_number" \
+        "$STAGE_TOTAL" \
+        "${STAGE_NAMES[$index]}" \
+        "${STAGE_SCRIPTS[$index]}"
+    then
+        STAGE_STATUSES[$index]="complete"
+    else
+        STAGE_STATUSES[$index]="failed"
+        BOOTSTRAP_STATUS=1
+        break
+    fi
+done
 
 BOOTSTRAP_ELAPSED=$((SECONDS - BOOTSTRAP_STARTED_AT))
 
 atlas_section "Bootstrap Summary"
-atlas_success "Install Packages"
-atlas_success "Configure Shell"
-atlas_success "Configure SSH"
-atlas_success "Configure Tailscale"
-atlas_success "Install Atlas"
+
+for index in "${!STAGE_NAMES[@]}"; do
+    case "${STAGE_STATUSES[$index]}" in
+        complete)
+            atlas_success "${STAGE_NAMES[$index]}"
+            ;;
+        failed)
+            atlas_error "${STAGE_NAMES[$index]}"
+            ;;
+        pending)
+            atlas_warn "${STAGE_NAMES[$index]} — not run"
+            ;;
+    esac
+done
+
 echo
 atlas_info "Elapsed time: $(atlas_format_duration "$BOOTSTRAP_ELAPSED")"
 
-atlas_footer "Atlas Bootstrap completed successfully."
+if ((BOOTSTRAP_STATUS == 0)); then
+    atlas_footer "Atlas Bootstrap completed successfully."
+else
+    atlas_footer "Atlas Bootstrap did not complete."
+fi
+
+exit "$BOOTSTRAP_STATUS"

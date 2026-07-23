@@ -66,7 +66,9 @@ atlas_format_duration() {
     local minutes=$((total_seconds / 60))
     local seconds=$((total_seconds % 60))
 
-    if ((minutes > 0)); then
+    if ((total_seconds == 0)); then
+        printf "<1s"
+    elif ((minutes > 0)); then
         printf "%dm %02ds" "$minutes" "$seconds"
     else
         printf "%ds" "$seconds"
@@ -79,12 +81,10 @@ run_stage() {
     local stage_name="$3"
     local script_path="$4"
     local started_at
-    local finished_at
     local elapsed
     local status
 
     atlas_section "[$stage_number/$stage_total] $stage_name"
-    atlas_info "Script: $(basename "$script_path")"
 
     started_at=$SECONDS
 
@@ -94,12 +94,11 @@ run_stage() {
         status=$?
     fi
 
-    finished_at=$SECONDS
-    elapsed=$((finished_at - started_at))
+    elapsed=$((SECONDS - started_at))
 
     echo
 
-    if [[ "$status" -eq 0 ]]; then
+    if ((status == 0)); then
         atlas_success "$stage_name complete ($(atlas_format_duration "$elapsed"))"
     else
         atlas_error "$stage_name failed with status $status ($(atlas_format_duration "$elapsed"))"
